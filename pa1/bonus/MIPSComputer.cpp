@@ -80,7 +80,7 @@ MIPSComputer::IFIDReg MIPSComputer::insFetch(unsigned int pc)
     reg.Ins = (Memory[pc+3] << 24)
             | (Memory[pc+2] << 16)
             | (Memory[pc+1] << 8)
-            | Memory[pc+0];
+            | Memory[pc];
     reg.PC = pc + 4;
     return reg;
 }
@@ -103,7 +103,7 @@ MIPSComputer::IDEXReg MIPSComputer::insDecode(const MIPSComputer::IFIDReg &if_id
                 case SLL: cout << "sll"; break;
                 case SRL: cout << "srl"; break;
                 case SLT: cout << "slt"; break;
-                default: cerr << "Unsupported R-type Instruction";
+                default: cerr << "Unsupported R-type Instruction"; exit(-1);
             }
             break;
         case ADDI: cout << "addi"; break;
@@ -177,7 +177,7 @@ int MIPSComputer::ALU(int A, int B, int ALUCtrl)
         case BNE:
             res = A != B; break;
         default:
-            cerr << "Unsupported ALU Operation" << endl;
+            cerr << "Unsupported ALU Operation" << endl; exit(-1);
     }
     return res;
 }
@@ -231,14 +231,14 @@ MIPSComputer::MEMWBReg MIPSComputer::memAccess(const MIPSComputer::EXMEMReg &ex_
 {
     MIPSComputer::MEMWBReg reg;
     reg.rd = ex_mem_reg.rd;
-    reg.ALUOut = ex_mem_reg.ALUOut;
-    reg.MemRead = ex_mem_reg.MemRead;
+    reg.data = ex_mem_reg.ALUOut;
     reg.RegWrite = ex_mem_reg.RegWrite;
+
     if(ex_mem_reg.MemWrite){// sw
         int addr = ex_mem_reg.ALUOut;
         int data = ex_mem_reg.Rb;
         for(int i=0; i<4; ++i){
-            Memory[addr + i] = data & 0xff;
+            Memory[addr + i] = (unsigned char)(data & 0xff);
             data >>= 8;
         }
     }
@@ -257,7 +257,7 @@ MIPSComputer::MEMWBReg MIPSComputer::memAccess(const MIPSComputer::EXMEMReg &ex_
 void MIPSComputer::writeBack(const MIPSComputer::MEMWBReg &reg)
 {
     if(reg.RegWrite){
-        Reg[reg.rd] = (reg.MemRead ? reg.data : reg.ALUOut);
+        Reg[reg.rd] = reg.data;
     }
 }
 

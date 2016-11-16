@@ -49,8 +49,6 @@ private:
     {
         int rd;
         int data;
-        int ALUOut;
-        bool MemRead;
         bool RegWrite;
     };
 
