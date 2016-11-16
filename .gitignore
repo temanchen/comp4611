@@ -1,4 +1,4 @@
 *.o
 main
+main.exe
 .DS_Store
-

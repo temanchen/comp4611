@@ -13,9 +13,9 @@ using namespace std;
 // I type: addi 8, lw 23, sw 2b, beq 4, bne 5
 // J type: j 2
 #ifdef DEBUG
-#define LOG(...) printf(...)
+#define DEBUG_LOG(args...) printf(args...)
 #else
-#define LOG(...) do {} while(0);
+#define DEBUG_LOG(args...) do {} while(0);
 #endif
 
 #define RTYPE 0
@@ -84,7 +84,7 @@ int MIPSComputer::run()
     Ins = (Memory[PC+3]<<24)
          |(Memory[PC+2]<<16)
          |(Memory[PC+1]<<8)
-         | Memory[PC+0]; //Little-Endian   
+         | Memory[PC]; //Little-Endian   
     PC+=4;
     while(Ins){
         //fill in the following values
@@ -138,7 +138,6 @@ int MIPSComputer::run()
 
             case ADDI:
                 cout << "addi" << endl;
-                LOG("rt: %d, rs: %d, dat: %d\n", rt, rs, dat);
                 Reg[rt] = Reg[rs] + dat;
                 break;
             case LW:
@@ -157,7 +156,7 @@ int MIPSComputer::run()
                 int addr = Reg[rs] + dat;
                 int data = Reg[rt];
                 for(int i=0; i<4; ++i){
-                    Memory[addr + i] = data & 0xff;
+                    Memory[addr + i] = (unsigned char)(data & 0xff);
                     data >>= 8;
                 }
                 break;
@@ -180,7 +179,6 @@ int MIPSComputer::run()
             case BNE:
             {
                 cout << "bne" <<endl;
-                LOG("rt: %d, rs: %d, dat: %d\n", rt, rs, dat);
                 globalPredictionDecision = globalPredictor.branchPredictionDecision();
                 localPredictionDecision = localPredictor.branchPredictionDecision(PC-4);
                 unsigned int oldPC = PC;
@@ -207,7 +205,7 @@ int MIPSComputer::run()
         Ins = (Memory[PC+3]<<24)
              |(Memory[PC+2]<<16)
              |(Memory[PC+1]<<8)
-             | Memory[PC+0]; //Little-Endian   
+             | Memory[PC]; //Little-Endian   
         PC+=4;
     }
     cout << "All instructions have been executed!" << endl << endl;
